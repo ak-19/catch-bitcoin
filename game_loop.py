@@ -1,6 +1,7 @@
 import pygame
 from constants import Constants
 from colors import Colors
+from man import Man
 from screen import Screen
 
 
@@ -12,9 +13,11 @@ class GameLoop:
         self.coin_velocity = Constants.COIN_START_VELOCITY
         self.clock = pygame.time.Clock()
         self.FPS = 60
-        self.font = pygame.font.Font('assets/AttackGraffiti.ttf', 32)
+        self.font = pygame.font.Font('assets/BlackgroundsRegular.ttf', 32)
         pygame.mixer.music.load('assets/draft-monk-ambience.mp3')
         pygame.mixer.music.play(-1)
+
+        self.man = Man(100,100)
 
     def run_loop_state(self):
         for event in pygame.event.get():
@@ -50,7 +53,8 @@ class GameLoop:
         self.display.blit(score_text, score_text_rect)
         self.display.blit(lives_text, lives_text_rect)
         self.display.blit(header_text, header_text_rect)
-        pygame.draw.line(self.display, Colors.GREEN, (0, 80), (Screen.WIDTH, 80), width=2)
+        self.display.blit(self.man.image, self.man.rect)
+        pygame.draw.line(self.display, Colors.GREEN, (0, 60), (Screen.WIDTH, 60), width=2)
 
     def run_game_loop(self):
         run_loop = True
