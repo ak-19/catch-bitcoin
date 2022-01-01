@@ -1,7 +1,7 @@
 from typing import Set
 from setup import Setup
-from game_loop import run_game_loop
+from game_loop import GameLoop
 
-run_game_loop(Setup.create())
+GameLoop(Setup.create()).run_game_loop()
 
 Setup.destroy()
