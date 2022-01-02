@@ -21,7 +21,7 @@ class GameLoop:
         self.clock = pygame.time.Clock()
         self.FPS = 60
         self.font = pygame.font.Font('assets/BlackgroundsRegular.ttf', 32)
-        self.endgame_font = pygame.font.Font('assets/BlackgroundsRegular.ttf', 64)
+        self.endgame_font = pygame.font.Font('assets/BlackgroundsRegular.ttf', 72)
 
         self.miss_sound = pygame.mixer.Sound('assets/miss.wav')
         self.pickup_sound = pygame.mixer.Sound('assets/pickup.wav')
@@ -29,7 +29,7 @@ class GameLoop:
         pygame.mixer.music.load('assets/draft-monk-ambience.mp3')
         pygame.mixer.music.play(-1)
 
-        self.man = Man(100,100)
+        self.man = Man(30,100)
         self.make_new_coin()
 
     def make_new_coin(self):
@@ -44,8 +44,6 @@ class GameLoop:
                 return False              
 
         if self.lost():   
-            self.loss_sound.play(0)         
-            pygame.mixer.music.stop()
             self.clock.tick(self.FPS)
             return True
 
@@ -70,6 +68,10 @@ class GameLoop:
             self.coin_velocity += Constants.COIN_ACCELERATION
 
 
+        if self.lost():   
+            self.loss_sound.play(0)         
+            pygame.mixer.music.stop()
+
         self.draw_objects()
 
         self.clock.tick(self.FPS)
@@ -77,10 +79,7 @@ class GameLoop:
         return True
 
     def lost(self):
-        if self.lives > 0:
-            return False
-
-        
+        if self.lives > 0: return False        
         end = self.endgame_font.render('Game over', False, Colors.GREEN, Colors.DARKGREEN)
         end_rect = end.get_rect()
         end_rect.center = (Screen.WIDTH // 2, Screen.HEIGHT // 2)        
