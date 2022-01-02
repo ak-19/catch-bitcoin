@@ -6,7 +6,7 @@ from pygame.display import update
 from bitcoin import Bitcoin
 from constants import Constants
 from colors import Colors
-from man import Man
+from hand import Hand
 from screen import Screen
 
 
@@ -29,7 +29,7 @@ class GameLoop:
         pygame.mixer.music.load('assets/draft-monk-ambience.mp3')
         pygame.mixer.music.play(-1)
 
-        self.man = Man(30,100)
+        self.hand = Hand(10,100)
         self.make_new_coin()
 
     def make_new_coin(self):
@@ -49,10 +49,10 @@ class GameLoop:
 
         pressed = pygame.key.get_pressed()
 
-        if pressed[pygame.K_UP] and self.man.rect.y > 60:
-            self.man.rect.y -= self.player_velocity
-        elif pressed[pygame.K_DOWN] and self.man.rect.y < Screen.HEIGHT - 64:
-            self.man.rect.y += self.player_velocity
+        if pressed[pygame.K_UP] and self.hand.rect.y > 60:
+            self.hand.rect.y -= self.player_velocity
+        elif pressed[pygame.K_DOWN] and self.hand.rect.y < Screen.HEIGHT - self.hand.rect.width:
+            self.hand.rect.y += self.player_velocity
 
         if self.coin.rect.x - self.coin_velocity < 0:     
             self.lives -= 1       
@@ -61,7 +61,7 @@ class GameLoop:
         else:
             self.coin.rect.x -= self.coin_velocity
 
-        if self.man.rect.colliderect(self.coin.rect):
+        if self.hand.rect.colliderect(self.coin.rect):
             self.score += 1
             self.make_new_coin()
             self.pickup_sound.play()
@@ -100,7 +100,7 @@ class GameLoop:
         lives_text_rect = score_text.get_rect()
         lives_text_rect.topright = (Screen.WIDTH - 10, 20)   
 
-        header_text = self.font.render('Ante, catch the bitcoin', False, Colors.YELLOW, Colors.BLACK)
+        header_text = self.font.render('Catch the bitcoin', False, Colors.YELLOW, Colors.BLACK)
         header_text_rect = header_text.get_rect()
         header_text_rect.topleft = (Screen.WIDTH // 2 - header_text_rect.width//2, 20)        
 
@@ -108,7 +108,7 @@ class GameLoop:
         self.display.blit(score_text, score_text_rect)
         self.display.blit(lives_text, lives_text_rect)
         self.display.blit(header_text, header_text_rect)
-        self.display.blit(self.man.image, self.man.rect)
+        self.display.blit(self.hand.image, self.hand.rect)
         self.display.blit(self.coin.image, self.coin.rect)
         pygame.draw.line(self.display, Colors.GREEN, (0, 60), (Screen.WIDTH, 60), width=2)
 
