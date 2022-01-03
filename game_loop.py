@@ -12,6 +12,11 @@ from screen import Screen
 
 class GameLoop:
     def __init__(self, display):
+        self.setup_game(display)
+
+    def setup_game(self, display):
+        self.run_loop = True
+        self.stopped = False
         self.display = display
         self.score = 0
         self.lives = 5
@@ -30,20 +35,24 @@ class GameLoop:
         pygame.mixer.music.play(-1)
 
         self.hand = Hand(10,100)
-        self.make_new_coin()
+        self.make_new_coin()        
 
     def make_new_coin(self):
         self.coin = Bitcoin(Screen.WIDTH - 32, randint(60, Screen.HEIGHT - 32))
 
-    def run_loop_state(self):
+    def loop_state_transition(self):
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return False              
+                return False       
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p and self.stopped:
+                self.setup_game(self.display)
+                return True 
 
-        if self.lost():   
+        if self.stopped:   
+            self.draw_end()            
             self.clock.tick(self.FPS)
             return True
 
@@ -54,23 +63,14 @@ class GameLoop:
         elif pressed[pygame.K_DOWN] and self.hand.rect.y < Screen.HEIGHT - self.hand.rect.width:
             self.hand.rect.y += self.player_velocity
 
-        if self.coin.rect.x - self.coin_velocity < 0:     
-            self.lives -= 1       
-            self.make_new_coin()
-            self.miss_sound.play()        
-        else:
-            self.coin.rect.x -= self.coin_velocity
+        self.process_coin()
 
-        if self.hand.rect.colliderect(self.coin.rect):
-            self.score += 1
-            self.make_new_coin()
-            self.pickup_sound.play()
-            self.coin_velocity += Constants.COIN_ACCELERATION
-
+        self.check_hand_coin_collision()
 
         if self.lost():   
             self.loss_sound.play(0)         
             pygame.mixer.music.stop()
+            self.stopped = True
 
         self.draw_objects()
 
@@ -78,14 +78,34 @@ class GameLoop:
 
         return True
 
-    def lost(self):
-        if self.lives > 0: return False        
-        end = self.endgame_font.render('Game over', False, Colors.GREEN, Colors.DARKGREEN)
+    def check_hand_coin_collision(self):
+        if self.hand.rect.colliderect(self.coin.rect):
+            self.score += 1
+            self.make_new_coin()
+            self.pickup_sound.play()
+            self.coin_velocity += Constants.COIN_ACCELERATION
+
+    def process_coin(self):
+        if self.coin.rect.x - self.coin_velocity < 0:     
+            self.lives -= 1       
+            self.make_new_coin()
+            self.miss_sound.play()        
+        else:
+            self.coin.rect.x -= self.coin_velocity
+
+    def draw_end(self):
+        end = self.endgame_font.render('Game over!', False, Colors.GREEN, Colors.DARKGREEN)
+        press_play = self.endgame_font.render('Press "P" to play again', False, Colors.GREEN, Colors.DARKGREEN)
         end_rect = end.get_rect()
+        press_play_rect = press_play.get_rect()
         end_rect.center = (Screen.WIDTH // 2, Screen.HEIGHT // 2)        
+        press_play_rect.center = (Screen.WIDTH // 2, Screen.HEIGHT // 2 + 60)        
         self.display.blit(end, end_rect)
-        pygame.display.update()
-        return True
+        self.display.blit(press_play, press_play_rect)
+        pygame.display.update()        
+
+    def lost(self):
+        return self.lives < 1
 
     def draw_objects(self):
         self.draw()
@@ -113,6 +133,5 @@ class GameLoop:
         pygame.draw.line(self.display, Colors.GREEN, (0, 60), (Screen.WIDTH, 60), width=2)
 
     def run_game_loop(self):
-        run_loop = True
-        while run_loop:
-            run_loop = self.run_loop_state()
+        while self.run_loop:
+            self.run_loop = self.loop_state_transition()
